@@ -1,0 +1,377 @@
+---
+import { creator, enabledCurrencies } from '../config';
+
+interface Props {
+  amounts?: number[];
+  name?: string;
+  avatar?: string;
+  links?: string[];
+}
+
+const {
+  amounts = [3, 5, 10],
+  name,
+  avatar = creator.avatar,
+  links = [],
+} = Astro.props;
+
+
+const defaultCurrency = enabledCurrencies[0];
+const showToggle = enabledCurrencies.length > 1;
+---
+
+<div class="tip-card">
+  <div class="header">
+    {
+      name && (
+        <div class="creator">
+          <div class="avatar">
+            <img src={avatar} alt={name} />
+          </div>
+          <div class="creator-info">
+            <span class="creator-name">{name}</span>
+            {links.map((link) => (
+              <a
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="creator-link"
+              >
+                {link}
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+  </div>
+
+  {showToggle && (
+    <div class="currency-toggle">
+      {enabledCurrencies.map((c, i) => (
+        <button type="button" class={`currency-btn${i === 0 ? ' active' : ''}`} data-currency={c.code}>
+          <img src={c.icon} alt={c.code} class="currency-icon" /> {c.code}
+        </button>
+      ))}
+    </div>
+  )}
+
+  <div class="amounts">
+    {
+      amounts.map((n) => (
+          <button type="button" class="amount-btn" data-amount={n}>
+          <img src={defaultCurrency.icon} alt={defaultCurrency.code} class="currency-icon current-currency-icon" /> {n}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="custom-amount">
+    <div class="input-wrapper">
+      <span class="currency"><img src={defaultCurrency.icon} alt={defaultCurrency.code} class="currency-icon current-currency-icon" /></span>
+      <input type="number" id="custom" min="1" step="1" placeholder="Custom amount" aria-label="Custom amount" />
+    </div>
+  </div>
+
+  <div class="message-field">
+    <label for="message">Message (optional)</label>
+    <textarea id="message" rows="3" placeholder="Say something nice..."
+    ></textarea>
+  </div>
+
+  <button type="button" class="submit-btn" id="tip-btn">
+    Support <img src={defaultCurrency.icon} alt={defaultCurrency.code} class="currency-icon current-currency-icon" />
+    <span id="tip-btn-text">0 {defaultCurrency.code}</span>
+  </button>
+</div>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.amount-btn');
+  const customInput = document.getElementById('custom') as HTMLInputElement;
+  const tipBtnText = document.getElementById('tip-btn-text') as HTMLSpanElement;
+  const currencyBtns = document.querySelectorAll<HTMLButtonElement>('.currency-btn');
+  const currentCurrencyIcons = document.querySelectorAll<HTMLImageElement>('.current-currency-icon');
+
+  const firstIcon = currentCurrencyIcons[0]?.src ?? '';
+  const currencyIcons: Record<string, string> = {};
+  currencyBtns.forEach((btn) => {
+    const code = btn.dataset.currency ?? '';
+    const icon = btn.querySelector('img')?.src ?? '';
+    if (code) currencyIcons[code] = icon;
+  });
+  if (Object.keys(currencyIcons).length === 0) {
+    const defaultCode = tipBtnText?.textContent?.trim().split(' ').pop() ?? '';
+    if (defaultCode) currencyIcons[defaultCode] = firstIcon;
+  }
+
+  let selectedCurrency = Object.keys(currencyIcons)[0] ?? '';
+
+  function updateBtn(amount: string) {
+    if (tipBtnText) {
+      tipBtnText.textContent = amount ? `${amount} ${selectedCurrency}` : `0 ${selectedCurrency}`;
+    }
+  }
+
+  function updateCurrency(currency: string) {
+    selectedCurrency = currency;
+    const iconSrc = currencyIcons[currency] ?? firstIcon;
+    currentCurrencyIcons.forEach((icon) => {
+      icon.src = iconSrc;
+      icon.alt = currency;
+    });
+    updateBtn(customInput?.value ?? '');
+  }
+
+  currencyBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      currencyBtns.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      updateCurrency(btn.dataset.currency ?? '');
+    });
+  });
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      buttons.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (customInput) customInput.value = btn.dataset.amount ?? '';
+      updateBtn(btn.dataset.amount ?? '');
+    });
+  });
+
+  customInput?.addEventListener('input', () => {
+    buttons.forEach((b) => b.classList.remove('active'));
+    if (customInput.value.includes('.')) {
+      customInput.value = customInput.value.split('.')[0];
+    }
+    const val = parseFloat(customInput.value);
+    if (customInput.value !== '' && (isNaN(val) || val < 1)) {
+      customInput.value = '';
+    }
+    updateBtn(customInput.value);
+  });
+</script>
+
+<style>
+  .tip-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2rem clamp(1rem, 4vw, 2rem);
+    width: 100%;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .creator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #fff;
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .creator-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .creator-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+
+  .creator-link {
+    font-size: 1rem;
+    color: var(--color-accent);
+    text-decoration: none;
+    overflow-wrap: break-word;
+    word-break: break-all;
+  }
+
+  .creator-link:hover {
+    color: var(--color-accent-hover);
+  }
+
+  .tip-card :global(.currency-icon) {
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.15em;
+  }
+
+  .amounts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .amount-btn {
+    padding: 0.6rem;
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-surface);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .amount-btn:hover {
+    border-color: var(--color-accent);
+  }
+
+  .amount-btn.active {
+    border-color: var(--color-accent);
+    background: var(--color-accent-active-bg);
+    color: var(--color-accent-hover);
+  }
+
+  .currency-toggle {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .currency-btn {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    background: var(--color-surface);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+
+  .currency-btn:first-child {
+    border-right: 1px solid var(--color-border);
+  }
+
+  .currency-btn:hover {
+    background: var(--color-bg);
+  }
+
+  .currency-btn.active {
+    background: var(--color-accent);
+    color: var(--color-surface);
+  }
+
+  .custom-amount,
+  .message-field {
+    text-align: left;
+    margin-bottom: 1rem;
+  }
+
+  .tip-card label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    color: var(--color-text-secondary);
+  }
+
+  .input-wrapper {
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+
+  .input-wrapper:focus-within {
+    border-color: var(--color-accent);
+  }
+
+  .currency {
+    padding: 0 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    background: var(--color-bg);
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+  }
+
+  input[type='number'] {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 0.6rem;
+    font-size: 1rem;
+    background: transparent;
+  }
+
+  textarea {
+    width: 100%;
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    padding: 0.6rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  textarea:focus {
+    border-color: var(--color-accent);
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 0.85rem;
+    background: linear-gradient(135deg, var(--color-beer), var(--color-accent), var(--color-beer));
+    background-size: 200% 200%;
+    color: var(--color-surface);
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.15s;
+    margin-bottom: 0.75rem;
+    animation: gradient-shift 5s ease infinite;
+  }
+
+  .submit-btn:hover {
+    filter: brightness(0.92);
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+</style>

@@ -1,0 +1,28 @@
+{
+  "name": "buymeone.beer",
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "lint": "eslint 'src/**/*.{ts,astro}'",
+    "lint:fix": "eslint 'src/**/*.{ts,astro}' --fix",
+    "format": "prettier --write 'src/**/*.{ts,astro,css,json}'",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "astro": "^5.7.10"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@typescript-eslint/eslint-plugin": "^8.61.0",
+    "@typescript-eslint/parser": "^8.61.0",
+    "eslint": "^10.5.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-astro": "^1.7.0",
+    "prettier": "^3.8.4",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,67 @@
+---
+import Base from '../layouts/Base.astro';
+import TipCard from '../components/TipCard.astro';
+import { creator } from '../config';
+
+const year = new Date().getFullYear();
+---
+
+<Base title="Buy Me One Beer | buymeone.beer">
+  <main>
+    <h1 class="banner">Buy Me One Beer <img src="/assets/beer_mug.png" alt="Beer mug" class="banner-icon" /></h1>
+    <TipCard
+      name={creator.name}
+      links={creator.links}
+    />
+  </main>
+  <footer class="footer">
+    <p>&copy; {year} buymeone.beer</p>
+  </footer>
+</Base>
+
+<style>
+  main {
+    padding: 1rem clamp(0.75rem, 4vw, 2rem) 3rem;
+    max-width: 680px;
+    width: 100%;
+  }
+
+  .banner {
+    font-size: clamp(1.5rem, 8vw, 3rem);
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 2rem;
+    letter-spacing: 0.02em;
+    color: transparent;
+    background: linear-gradient(135deg, var(--color-beer), var(--color-accent), var(--color-beer));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    animation: gradient-shift 5s ease infinite;
+  }
+
+  .banner-icon {
+    width: clamp(32px, 8vw, 48px);
+    height: clamp(32px, 8vw, 48px);
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    padding: 0.75rem;
+    color: var(--color-accent-hover);
+    font-size: 0.85rem;
+  }
+
+</style>

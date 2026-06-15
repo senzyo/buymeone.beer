@@ -5,14 +5,15 @@ buymeone.beer — 创作者打赏页面，类似 Buy Me a Coffee。纯静态站�
 ## 快速开始
 
 ```bash
-npm install          # 安装依赖
-npm run dev          # 开发服务器 → localhost:4321
-npm run build        # 构建静态站点 → dist/
-npm run preview      # 本地预览构建结果
-npm run lint         # ESLint 检查
-npm run lint:fix     # ESLint 自动修复
-npm run format       # Prettier 格式化
-npm run check        # Astro 类型检查
+npm install            # 安装依赖
+npm run dev            # 开发服务器 → localhost:4321
+npm run dev -- --host  # 开发服务器 → 172.20.138.250:4321
+npm run build          # 构建静态站点 → dist/
+npm run preview        # 本地预览构建结果
+npm run lint           # ESLint 检查
+npm run lint:fix       # ESLint 自动修复
+npm run format         # Prettier 格式化
+npm run check          # Astro 类型检查
 ```
 
 ## 技术栈

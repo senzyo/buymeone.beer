@@ -61,6 +61,11 @@ const showToggle = enabledCurrencies.length > 1;
     </div>
   </div>
 
+  <div class="contact-field">
+    <label for="contact">Name or Email <span class="required">*</span></label>
+    <input type="text" id="contact" placeholder="Your name or email" required />
+  </div>
+
   <div class="message-field">
     <label for="message">Message (optional)</label>
     <textarea id="message" rows="3" placeholder="Say something nice..."
@@ -238,9 +243,29 @@ const showToggle = enabledCurrencies.length > 1;
   }
 
   .custom-amount,
+  .contact-field,
   .message-field {
     text-align: left;
     margin-bottom: 1rem;
+  }
+
+  .required {
+    color: var(--color-accent);
+  }
+
+  .contact-field input {
+    width: 100%;
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    padding: 0.6rem;
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .contact-field input:focus {
+    border-color: var(--color-accent);
   }
 
   .tip-card label {

@@ -44,19 +44,26 @@ const showToggle = enabledCurrencies.length > 1;
     }
   </div>
 
-  {showToggle && (
-    <div class="currency-toggle">
-      {enabledCurrencies.map((c, i) => (
-        <button type="button" class={`currency-btn${i === 0 ? ' active' : ''}`} data-currency={c.code}>
-          <img src={c.icon} alt={c.code} class="currency-icon" /> {c.code}
-        </button>
-      ))}
-    </div>
-  )}
-
   <div class="custom-amount">
     <div class="input-wrapper">
-      <span class="currency"><img src={defaultCurrency.icon} alt={defaultCurrency.code} class="currency-icon current-currency-icon" /></span>
+      <div class="currency-select" tabindex="0">
+        <div class="currency-trigger">
+          <img src={defaultCurrency.icon} alt={defaultCurrency.code} class="currency-icon current-currency-icon" />
+          <span class="currency-code current-currency-code">{defaultCurrency.code}</span>
+          <svg class="currency-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none">
+            <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      {showToggle && (
+        <div class="currency-dropdown">
+          {enabledCurrencies.map((c) => (
+            <button type="button" class={`currency-option${c.code === defaultCurrency.code ? ' active' : ''}`} data-currency={c.code}>
+              <img src={c.icon} alt={c.code} class="currency-icon" /> {c.code}
+            </button>
+          ))}
+        </div>
+      )}
       <input type="number" id="custom" min="1" step="1" placeholder="Custom amount" aria-label="Custom amount" />
     </div>
   </div>
@@ -81,12 +88,16 @@ const showToggle = enabledCurrencies.length > 1;
 <script>
   const customInput = document.getElementById('custom') as HTMLInputElement;
   const tipBtnText = document.getElementById('tip-btn-text') as HTMLSpanElement;
-  const currencyBtns = document.querySelectorAll<HTMLButtonElement>('.currency-btn');
+  const currencyTrigger = document.querySelector('.currency-trigger') as HTMLElement | null;
+  const currencySelect = document.querySelector('.currency-select') as HTMLElement | null;
+  const currencyDropdown = document.querySelector('.currency-dropdown') as HTMLElement | null;
+  const currencyOptions = document.querySelectorAll<HTMLButtonElement>('.currency-option');
   const currentCurrencyIcons = document.querySelectorAll<HTMLImageElement>('.current-currency-icon');
+  const currentCurrencyCodes = document.querySelectorAll<HTMLElement>('.current-currency-code');
 
   const firstIcon = currentCurrencyIcons[0]?.src ?? '';
   const currencyIcons: Record<string, string> = {};
-  currencyBtns.forEach((btn) => {
+  currencyOptions.forEach((btn) => {
     const code = btn.dataset.currency ?? '';
     const icon = btn.querySelector('img')?.src ?? '';
     if (code) currencyIcons[code] = icon;
@@ -111,15 +122,43 @@ const showToggle = enabledCurrencies.length > 1;
       icon.src = iconSrc;
       icon.alt = currency;
     });
+    currentCurrencyCodes.forEach((el) => {
+      el.textContent = currency;
+    });
     updateBtn(customInput?.value ?? '');
   }
 
-  currencyBtns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      currencyBtns.forEach((b) => b.classList.remove('active'));
+  function closeDropdown() {
+    currencyDropdown?.classList.remove('open');
+    currencySelect?.classList.remove('open');
+  }
+
+  currencyTrigger?.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    const isOpen = currencyDropdown?.classList.contains('open');
+    if (isOpen) {
+      closeDropdown();
+    } else {
+      currencyDropdown?.classList.add('open');
+      currencySelect?.classList.add('open');
+    }
+  });
+
+  currencyOptions.forEach((btn) => {
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      currencyOptions.forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       updateCurrency(btn.dataset.currency ?? '');
+      closeDropdown();
     });
+  });
+
+  document.addEventListener('click', (e) => {
+    const target = e.target as Node;
+    if (!currencySelect?.contains(target) && !currencyDropdown?.contains(target)) {
+      closeDropdown();
+    }
   });
 
   customInput?.addEventListener('input', () => {
@@ -205,43 +244,6 @@ const showToggle = enabledCurrencies.length > 1;
     vertical-align: -0.15em;
   }
 
-  .currency-toggle {
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 1rem;
-    border: 2px solid var(--color-border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .currency-btn {
-    flex: 1;
-    padding: 0.5rem;
-    border: none;
-    background: var(--color-surface);
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-  }
-
-  .currency-btn:first-child {
-    border-right: 1px solid var(--color-border);
-  }
-
-  .currency-btn:hover {
-    background: var(--color-bg);
-  }
-
-  .currency-btn.active {
-    background: var(--color-accent);
-    color: var(--color-surface);
-  }
-
   .custom-amount,
   .contact-field,
   .message-field {
@@ -281,22 +283,93 @@ const showToggle = enabledCurrencies.length > 1;
     align-items: center;
     border: 2px solid var(--color-border);
     border-radius: 8px;
-    overflow: hidden;
     transition: border-color 0.15s;
+    position: relative;
   }
 
   .input-wrapper:focus-within {
     border-color: var(--color-accent);
   }
 
-  .currency {
-    padding: 0 0.75rem;
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    background: var(--color-bg);
+  .currency-select {
+    position: static;
     height: 2.5rem;
     display: flex;
     align-items: center;
+    background: var(--color-bg);
+    border-right: 1px solid var(--color-border);
+    border-radius: 6px 0 0 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .currency-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0 0.6rem 0 0.75rem;
+    height: 100%;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    transition: color 0.15s;
+  }
+
+  .currency-select:hover .currency-trigger {
+    color: var(--color-text);
+  }
+
+  .currency-arrow {
+    transition: transform 0.15s;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+  }
+
+  .currency-select.open .currency-arrow {
+    transform: rotate(180deg);
+  }
+
+  .currency-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: -2px;
+    min-width: 80px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    overflow: hidden;
+  }
+
+  .currency-dropdown.open {
+    display: block;
+  }
+
+  .currency-option {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    background: var(--color-surface);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    color: var(--color-text);
+    font-family: inherit;
+  }
+
+  .currency-option:hover {
+    background: var(--color-bg);
+  }
+
+  .currency-option.active {
+    background: var(--color-accent-active-bg);
+    color: var(--color-accent);
   }
 
   input[type='number'] {
@@ -307,6 +380,7 @@ const showToggle = enabledCurrencies.length > 1;
     padding: 0.6rem;
     font-size: 1rem;
     background: transparent;
+    border-radius: 0 6px 6px 0;
   }
 
   textarea {

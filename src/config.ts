@@ -7,13 +7,13 @@ export const creator = {
 };
 
 export const currencies = {
-  // USDT: { enabled: true, icon: '/assets/USDT.svg' },
-  // USDC: { enabled: true, icon: '/assets/USDC.svg' },
   USD: { enabled: true, icon: '/assets/USD.svg' },
   CNY: { enabled: true, icon: '/assets/CNY.svg' },
   EUR: { enabled: true, icon: '/assets/EUR.svg' },
   GBP: { enabled: true, icon: '/assets/GBP.svg' },
-  RUB: { enabled: true, icon: '/assets/RUB.svg' }
+  RUB: { enabled: true, icon: '/assets/RUB.svg' },
+  USDT: { enabled: true, icon: '/assets/USDT.svg' },
+  USDC: { enabled: true, icon: '/assets/USDC.svg' }
 } as const;
 
 export type CurrencyCode = keyof typeof currencies;

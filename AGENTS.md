@@ -43,7 +43,9 @@ buymeone.beer/
 │   │   ├── EUR.svg
 │   │   ├── GBP.svg
 │   │   ├── RUB.svg
-│   │   └── USD.svg
+│   │   ├── USD.svg
+│   │   ├── USDT.svg
+│   │   └── USDC.svg
 │   └── robots.txt
 └── src/
     ├── config.ts              # 站点配置（创作者信息、币种列表）
@@ -78,6 +80,11 @@ export const creator = {
 export const currencies = {
   USD: { enabled: true, icon: '/assets/USD.svg' },
   CNY: { enabled: true, icon: '/assets/CNY.svg' },
+  EUR: { enabled: true, icon: '/assets/EUR.svg' },
+  GBP: { enabled: true, icon: '/assets/GBP.svg' },
+  RUB: { enabled: true, icon: '/assets/RUB.svg' },
+  USDT: { enabled: true, icon: '/assets/USDT.svg' },
+  USDC: { enabled: true, icon: '/assets/USDC.svg' },
   // 注释掉某行即禁用该币种
 } as const;
 ```
@@ -90,9 +97,12 @@ body                          # global.css: flex 纵向居中，min-height: 100v
   │    ├─ .banner             # 标题 h1，渐变动画文字，含啤酒杯图标
   │    └─ .tip-card           # TipCard.astro: 白色卡片，圆角阴影
   │         ├─ .header        # 顶部区域：创作者头像 + 名称 + 链接
-  │         ├─ .currency-toggle  # 币种切换按钮栏（flex-wrap 自动换行）
-  │         ├─ .amounts       # 预设金额按钮（3 列 grid）
   │         ├─ .custom-amount # 自定义金额输入框
+  │         │    └─ .input-wrapper
+  │         │         ├─ .currency-select   # 币种下拉触发器（图标 + 代码 + 箭头）
+  │         │         ├─ .currency-dropdown # 币种下拉列表（绝对定位）
+  │         │         └─ input[type=number] # 金额输入框
+  │         ├─ .contact-field # 姓名/邮箱输入框（必填）
   │         ├─ .message-field # 留言文本框
   │         └─ .submit-btn    # 支持按钮（渐变动画，无支付功能）
   └─ .footer                  # 绝对定位底部，版权信息，主题色
@@ -102,7 +112,6 @@ body                          # global.css: flex 纵向居中，min-height: 100v
 
 ```typescript
 interface Props {
-  amounts?: number[];    // 预设金额按钮，默认 [3, 5, 10]
   name?: string;         // 创作者名称
   avatar?: string;       // 头像路径
   links?: string[];      // 链接 URL 列表，同时作为显示文本
@@ -136,15 +145,13 @@ interface Props {
 
 - `.tip-card`：`padding: 2rem clamp(1rem, 4vw, 2rem)` 窄屏自适应
 - `<main>`：`padding: 1rem clamp(0.75rem, 4vw, 2rem) 3rem`
-- `.currency-toggle`：`flex-wrap: wrap`，币种过多时自动换行
 - `.banner`：`font-size: clamp(1.5rem, 8vw, 3rem)`，图标 `clamp(32px, 8vw, 48px)`
 
 ## 交互脚本逻辑（TipCard.astro `<script>`）
 
-- 金额按钮点击 → 填充自定义输入框 + 更新按钮文本
 - 自定义输入 → 仅允许正整数（小数点自动截断，<1 自动清空）
-- 币种切换 → 同步更新所有 `.current-currency-icon` 的 src 和 alt
-- 支持单币种模式（无 toggle，fallback 从按钮文本提取币种代码）
+- 币种下拉 → mousedown 打开/选择，点击外部关闭，同步更新所有 `.current-currency-icon` 的 src 和 alt
+- 支持单币种模式（无 dropdown，仅显示默认币种）
 
 ## Astro 配置要点
 

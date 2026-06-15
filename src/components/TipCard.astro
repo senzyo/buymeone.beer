@@ -2,14 +2,12 @@
 import { creator, enabledCurrencies } from '../config';
 
 interface Props {
-  amounts?: number[];
   name?: string;
   avatar?: string;
   links?: string[];
 }
 
 const {
-  amounts = [3, 5, 10],
   name,
   avatar = creator.avatar,
   links = [],
@@ -56,16 +54,6 @@ const showToggle = enabledCurrencies.length > 1;
     </div>
   )}
 
-  <div class="amounts">
-    {
-      amounts.map((n) => (
-          <button type="button" class="amount-btn" data-amount={n}>
-          <img src={defaultCurrency.icon} alt={defaultCurrency.code} class="currency-icon current-currency-icon" /> {n}
-        </button>
-      ))
-    }
-  </div>
-
   <div class="custom-amount">
     <div class="input-wrapper">
       <span class="currency"><img src={defaultCurrency.icon} alt={defaultCurrency.code} class="currency-icon current-currency-icon" /></span>
@@ -86,7 +74,6 @@ const showToggle = enabledCurrencies.length > 1;
 </div>
 
 <script>
-  const buttons = document.querySelectorAll<HTMLButtonElement>('.amount-btn');
   const customInput = document.getElementById('custom') as HTMLInputElement;
   const tipBtnText = document.getElementById('tip-btn-text') as HTMLSpanElement;
   const currencyBtns = document.querySelectorAll<HTMLButtonElement>('.currency-btn');
@@ -130,17 +117,7 @@ const showToggle = enabledCurrencies.length > 1;
     });
   });
 
-  buttons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      buttons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      if (customInput) customInput.value = btn.dataset.amount ?? '';
-      updateBtn(btn.dataset.amount ?? '');
-    });
-  });
-
   customInput?.addEventListener('input', () => {
-    buttons.forEach((b) => b.classList.remove('active'));
     if (customInput.value.includes('.')) {
       customInput.value = customInput.value.split('.')[0];
     }
@@ -221,34 +198,6 @@ const showToggle = enabledCurrencies.length > 1;
     width: 1em;
     height: 1em;
     vertical-align: -0.15em;
-  }
-
-  .amounts {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .amount-btn {
-    padding: 0.6rem;
-    border: 2px solid var(--color-border);
-    border-radius: 8px;
-    background: var(--color-surface);
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-
-  .amount-btn:hover {
-    border-color: var(--color-accent);
-  }
-
-  .amount-btn.active {
-    border-color: var(--color-accent);
-    background: var(--color-accent-active-bg);
-    color: var(--color-accent-hover);
   }
 
   .currency-toggle {
